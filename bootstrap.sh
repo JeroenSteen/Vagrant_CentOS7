@@ -29,6 +29,7 @@ yum --enablerepo=remi install php5-fpm php5-mysql php5-mysql php5-curl php5-gd p
 npm install forever mongodb mongojs nodemon require.io socket.io
 
 #Install MongoDB; todo repo manage file
+cp /vagrant/src/mongo.repo /etc/yum.repos.d/mongodb.repo
 yum install -y mongodb-org
 #Configure SELinux
 semanage port -a -t mongodb_port_t -p tcp 27017
@@ -36,12 +37,17 @@ semanage port -a -t mongodb_port_t -p tcp 27017
 #Install ArangoDB
 yum install -y arangodb-2.2.3
 
-#Add host NGINX
-chmod 777 /etc/nginx/nginx.conf
-chmod 777 /etc/sysconfig/iptables
+#Disable firewall; Voor easy port forward hack
+#service iptables stop
+#chkconfig iptables off
+
+#Add host NGINX, Iptables
+#chmod 777 /etc/nginx/nginx.conf
+#chmod 777 /etc/sysconfig/iptables
 #sed -i s/\;cgi\.fix_pathinfo\s*\=\s*1/cgi.fix_pathinfo\=0/ /etc/php5/fpm/php.ini
 #mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
-cp /default /etc/nginx/sites-available/default
+cp /vagrant/src/default /etc/nginx/sites-available/default
+cp /vagrant/src/iptables /etc/sysconfig/iptables
 
 #Cleaning up
 yum -y clean all
@@ -49,15 +55,12 @@ yum -y clean all
 #Start or Stop services
 systemctl enable nginx.service
 systemctl start nginx.service
-service mongod restart
+service mongod start
+chkconfig mongod on
 service php5-fpm restart
 /etc/init.d/arangodb start
 #nodemon ./server.js localhost 8080
 #forever start ./server.js
-
-#Disable firewall; Voor easy port forward hack
-#service iptables stop
-#chkconfig iptables off
 
 #Show IP
 ifconfig eth0 | grep inet | awk '{ print $2 }'
