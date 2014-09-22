@@ -1,3 +1,10 @@
+#CentOS7 kickstart
+#https://www.centosblog.com/centos-7-minimal-kickstart-file/
+#install
+#lang en_GB.UTF-8
+#keyboard us
+#timezone Europe/Amsterdam
+
 #Network interface
 ifup eth0
 
@@ -13,11 +20,11 @@ rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0
 rpm -Uvh https://www.arangodb.org/repositories/arangodb2/CentOS_CentOS-6/x86_64/arangodb-2.2.3-11.1.x86_64.rpm
 
 #Install (Epel)packages
-yum -y install nginx npm mysql mysql-server
-yum --enablerepo=remi install php5-fpm php5-mysql
+yum -y install nginx nodejs npm mysql mysql-server phpmyadmin
+yum --enablerepo=remi install php5-fpm php5-mysql php5-mysql php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcached php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php5-xcache
 
 #Install Node.JS/NPM packages
-npm install socket.io require.io mongodb mongojs
+npm install forever mongodb mongojs nodemon require.io socket.io
 
 #Install MongoDB; todo repo manage file
 yum install -y mongodb-org
@@ -28,8 +35,11 @@ semanage port -a -t mongodb_port_t -p tcp 27017
 yum install -y arangodb-2.2.3
 
 #Add host NGINX
-#chmod 777 /etc/nginx/nginx.conf
-#su root nano add "server { listen 80 }" /etc/nginx/nginx.conf
+chmod 777 /etc/nginx/nginx.conf
+chmod 777 /etc/sysconfig/iptables
+sed -i s/\;cgi\.fix_pathinfo\s*\=\s*1/cgi.fix_pathinfo\=0/ /etc/php5/fpm/php.ini
+#mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
+cp /default /etc/nginx/sites-available/default
 
 #Cleaning up
 yum -y clean all
@@ -39,6 +49,9 @@ systemctl enable nginx.service
 systemctl start nginx.service
 service mongod restart
 service php5-fpm restart
+/etc/init.d/arangodb start
+#nodemon ./server.js localhost 8080
+#forever start ./server.js
 
 #Disable firewall; Voor easy port forward hack
 #service iptables stop
