@@ -3,7 +3,9 @@
 #install
 #lang en_GB.UTF-8
 #keyboard us
-#timezone Europe/Amsterdam
+
+#Set timezone Europe/Amsterdam
+cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 
 #Network interface
 ifup eth0
@@ -37,7 +39,7 @@ yum install -y arangodb-2.2.3
 #Add host NGINX
 chmod 777 /etc/nginx/nginx.conf
 chmod 777 /etc/sysconfig/iptables
-sed -i s/\;cgi\.fix_pathinfo\s*\=\s*1/cgi.fix_pathinfo\=0/ /etc/php5/fpm/php.ini
+#sed -i s/\;cgi\.fix_pathinfo\s*\=\s*1/cgi.fix_pathinfo\=0/ /etc/php5/fpm/php.ini
 #mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
 cp /default /etc/nginx/sites-available/default
 

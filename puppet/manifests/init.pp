@@ -1,6 +1,18 @@
-include motd
+resources { "firewall":
+  purge => true
+}
 
-file { 'motd':
-	path    => '/etc/motd',
-    content => template('site/motd'),
+package {'nginx':
+    ensure => latest
+}
+package {'php5-fpm':
+    ensure => latest
+}
+
+file { '/etc/nginx/sites-available/default':
+    source => "file:///default"
+}
+
+file { '/etc/sysconfig/iptables':
+    source => "file:///iptables"
 }
