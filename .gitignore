@@ -1,0 +1,12 @@
+$RECYCLE.BIN/
+System Volume Information/
+composer.phar
+composer.lock
+.env.*.php
+.env.php
+.DS_Store
+Thumbs.db
+.idea/
+www/
+raw/
+box/
