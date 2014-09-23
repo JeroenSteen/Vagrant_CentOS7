@@ -1,6 +1,6 @@
-#resources { "firewall":
-#  purge => true
-#}
+resources { "firewall":
+  purge => true
+}
 
 #package {'nginx':
 #    ensure => latest

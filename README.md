@@ -8,7 +8,7 @@ REQUIREMENTS:
 - WGET / GIT / Composer
 - NGINX
 - PHP 5
-- MYSQL 5
+- MYSQL 5 (MariaDB / TokuDB)
 - Node.JS / NPM
 - Socket.IO / Require.IO / MongoJS / Forever/Nodemon
 - MongoDB / ArangoDB
