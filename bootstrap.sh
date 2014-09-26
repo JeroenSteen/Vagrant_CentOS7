@@ -34,10 +34,14 @@ rpm -Uvh https://www.arangodb.org/repositories/arangodb2/CentOS_CentOS-6/x86_64/
 cp /vagrant/src/nginx.repo /etc/yum.repos.d/nginx.repo
 yum -y --enablerepo=remi,remi-php56 install nginx php-fpm php-common
 yum -y --enablerepo=remi,remi-php56 install php-cli php-gd php-mbstring php-mcrypt php-mysqlnd php-opcache php-pdo php-pear php-pecl-apcu php-pecl-memcache php-pecl-memcached php-pecl-mongo php-pecl-sqlite php-pgsql php-xml
+#https://www.digitalocean.com/community/tutorials/how-to-optimize-nginx-configuration
+#sudo sed -i "s@worker_processes 1;@worker_processes 4;" /etc/nginx/nginx.conf
+#sudo sed -i "s@worker_connections 1024;@worker_connections 2048;" /etc/nginx/nginx.conf
 sudo sed -i "s@;cgi.fix_pathinfo=1@cgi.fix_pathinfo=0@" /etc/php.ini
+sudo sed -i "s@;date.timezone =@date.timezone = Europe/Amsterdam@" /etc/php.ini
 sudo sed -i "s@listen = 127.0.0.1:9000@/var/run/php-fpm/php-fpm.sock@" /etc/php-fpm.d/www.conf
-sudo sed -i "s@user = apache@user = nginx@" /etc/nginx/nginx.conf
-sudo sed -i "s@group = apache@group = nginx@" /etc/nginx/nginx.conf
+sudo sed -i "s@user = apache@user = nginx@" /etc/php-fpm.d/www.conf
+sudo sed -i "s@group = apache@group = nginx@" /etc/php-fpm.d/www.conf
 
 yum -y mysql mysql-server mariadb-server mariadb phpmyadmin
 #Make log files
