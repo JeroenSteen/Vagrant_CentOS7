@@ -5,11 +5,13 @@ BOX:
 
 REQUIREMENTS:
 - CentOS 7
-- WGET / GIT / Composer
+- CURL / WGET / GIT
+- COMPOSER
 - NGINX
-- PHP 5
-- MYSQL 5 (MariaDB / TokuDB)
+- PHP 5 / FPM > HHVM
+- MYSQL/MARIADB + TOKUDB
 - Node.JS / NPM
 - Socket.IO / Require.IO / MongoJS / Forever/Nodemon
-- MongoDB / ArangoDB
+- MongoDB
+- ArangoDB
 - Laravel / Artisan Serve
