@@ -4,20 +4,20 @@
 #Set timezone Europe/Amsterdam
 cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 
-#Update YUM package manager; Install DeltaRPM
+#Use DeltaRPM; yum provides '*/applydeltarpm'
+yum -y install deltarpm-3.6-3.el7.x86_64
+#Update YUM package manager
 yum -y upgrade kernel
 yum -y --enablerepo=base clean metadata
-#yum provides '*/applydeltarpm'
-yum -y install deltarpm-3.6-3.el7.x86_64
 #Install packages
-yum -y install curl git kernel-devel nano wget
+yum -y install curl curl-devel git kernel-devel nano wget
 yum -y groupinstall "Development Tools"
 
 #Install GUI
 #yum -y groupinstall "GNOME Desktop" "Graphical Administration Tools"
 #ln -sf /lib/systemd/system/runlevel5.target /etc/systemd/system/default.target
 
-#Remi, Epel, NGINX, ArangoDB. Maybe IUS
+#Use Repositories: Remi, Epel, NGINX, ArangoDB. Maybe IUS, Ajenti
 #Get Remi dependency Epel; CentOS 7 and Red Hat (RHEL) 7
 #http://dl.fedoraproject.org/pub/epel/7/x86_64/e/
 rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
@@ -27,13 +27,20 @@ rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
 rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
 #Get ArangoDB
 rpm -Uvh https://www.arangodb.org/repositories/arangodb2/CentOS_CentOS-6/x86_64/arangodb-2.2.3-11.1.x86_64.rpm
+#Add Repositories; update YUM
+cp /vagrant/src/nginx.repo /etc/yum.repos.d/nginx.repo
+cp /vagrant/src/mongo.repo /etc/yum.repos.d/mongodb.repo
+cp /vagrant/src/mariadb.repo /etc/yum.repos.d/mariadb.repo
+#Disable MariaDB 5 in Repo for MariaDB 10
+#echo 'exclude=mariadb' >> /etc/yum.repos.d/CentOS-Base.repo
+yum -y update
+yum -y clean all
 
-#Install NGINX, PHP packages
+#Install NGINX, PHP 5.4 packages
 #php5 php5-fpm php5-mysql php5-mysql php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcached php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php5-xcache
 #yum -y --enablerepo=remi,remi-php56 install nginx php-fpm php-common php-opcache php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-pecl-mongo php-pecl-sqlite php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml
-cp /vagrant/src/nginx.repo /etc/yum.repos.d/nginx.repo
-yum -y --enablerepo=remi,remi-php56 install nginx php-fpm php-common
-yum -y --enablerepo=remi,remi-php56 install php-cli php-gd php-mbstring php-mcrypt php-mysqlnd php-opcache php-pdo php-pear php-pecl-apcu php-pecl-memcache php-pecl-memcached php-pecl-mongo php-pecl-sqlite php-pgsql php-xml
+yum -y install nginx php-fpm php-common
+yum -y install php-cli php-gd php-ldap php-mbstring php-mcrypt php-mysqlnd php-odbc php-opcache php-pdo php-pear php-pecl-apcu php-pecl-memcache php-pecl-memcached php-pecl-mongo php-pecl-sqlite php-pgsql php-snmp php-soap php-xml php-xmlrpc
 #Make log files; NGINX
 mkdir /var/log/nginx/
 touch /var/log/nginx/access.log
@@ -46,6 +53,7 @@ cp /vagrant/src/default /etc/nginx/conf.d/default.conf
 #sudo sed -i "s@worker_connections 1024;@worker_connections 2048;" /etc/nginx/nginx.conf
 sudo sed -i "s@;cgi.fix_pathinfo=1@cgi.fix_pathinfo=0@" /etc/php.ini
 sudo sed -i 's@;date.timezone =@date.timezone = "Europe/Amsterdam"@' /etc/php.ini
+#sudo sed -i '@max_connect_errors=100@max_connect_errors=5000@' /etc/php.ini
 sudo sed -i "s@listen = 127.0.0.1:9000@listen = /var/run/php-fpm/php-fpm.sock@" /etc/php-fpm.d/www.conf
 sudo sed -i "s@;listen.owner = nobody@listen.owner = nginx@" /etc/php-fpm.d/www.conf
 sudo sed -i "s@;listen.group = nobody@listen.group = nginx@" /etc/php-fpm.d/www.conf
@@ -55,17 +63,35 @@ sudo sed -i "s@group = apache@group = nginx@" /etc/php-fpm.d/www.conf
 echo "<?php phpinfo(); ?>" > /usr/share/nginx/html/info.php
 
 #Install MariaDB with TokuDB, PHPMyAdmin
-#cp /vagrant/src/mariadb.repo /etc/yum.repos.d/mariadb.repo
-yum -y mariadb-server mariadb phpmyadmin
-#yum -y install MariaDB-server MariaDB-client phpmyadmin
-#rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+#https://registry.hub.docker.com/u/zhaowh/centos-mariadb/dockerfile/
+#yum -y install mariadb-server mariadb phpmyadmin --skip-broken
+#MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+#Remove MariaDB 5
+#yum -y remove mariadb-libs
+#Install MariaDB 5
+yum -y install mariadb-server mariadb
 #No prompt at setting MariaDB pass
-export DEBIAN_FRONTEND=noninteractive
+#export DEBIAN_FRONTEND=noninteractive
 #debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password db_password rootpass' 2x
-debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/vagrant test vagrant'
-debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/vagrant test vagrant'
+#debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/vagrant test vagrant'
+#debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/vagrant test vagrant'
+#mysql -uroot -pPASS -e "SET PASSWORD = PASSWORD('test');"
+#Install MariaDB 10 ect.
+#yum -y install --enablerepo=mariadb MariaDB-server MariaDB-client phpmyadmin 
+rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+#cp /usr/share/mysql/mysql.server /etc/init.d/mysql
+#chmod +x /etc/init.d/mysql
+#chkconfig --add mysql
+#chkconfig --level 345 mysql on
+#Make log files; MariaDB
+mkdir /var/log/mariadb
+touch /var/log/mariadb/mariadb.log
+#chown -R mysql:mysql /var/lib/mysql
 #Enable TokuDB in MariaDB
-cp /vagrant/src/tokudb /etc/my.cnf
+#cp /vagrant/src/tokudb /etc/my.cnf
+#mysql -u root -p
+#MariaDB > SHOW VARIABLES;
+#MariaDB > quit
 
 #Install Node.JS/NPM packages
 yum -y --enablerepo=epel install nodejs npm
@@ -79,7 +105,6 @@ npm install -g express --save
 npm install -g socket.io --save
 
 #Install MongoDB; Repo file
-cp /vagrant/src/mongo.repo /etc/yum.repos.d/mongodb.repo
 yum -y install mongodb-org
 #Get Semange package provider. Config SELinux for MongoDB
 yum -y install policycoreutils-python
