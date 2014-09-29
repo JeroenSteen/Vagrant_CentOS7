@@ -1,3 +1,5 @@
+#http://www.robertshady.com/content/how-setup-and-configure-nginx-multi-site-web-hosting-and-running-php
+
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server ipv6only=on;

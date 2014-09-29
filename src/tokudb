@@ -1,17 +1,16 @@
-[mysqld]
-datadir=/var/lib/mysql
-socket=/var/lib/mysql/mysql.sock
+#[mysqld]
+#datadir=/var/lib/mysql
+#socket=/var/lib/mysql/mysql.sock
 # Disabling symbolic-links is recommended to prevent assorted security risks
-symbolic-links=0
-# Settings user and group are ignored when systemd is used.
-# If you need to run mysqld under a different user or group,
-# customize your systemd unit file for mariadb according to the
-# instructions in http://fedoraproject.org/wiki/Systemd
+#symbolic-links=0
 
-[mysqld_safe]
+# This group is read both both by the client and the server
+# use it for options that affect everything
+#
+[client-server]
 log-error=/var/log/mariadb/mariadb.log
 pid-file=/var/run/mariadb/mariadb.pid
-plugin-load=ha_tokudb
+#plugin-load=ha_tokudb
 
 #
 # include all files from the config directory

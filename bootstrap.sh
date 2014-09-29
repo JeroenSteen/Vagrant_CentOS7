@@ -32,7 +32,7 @@ cp /vagrant/src/nginx.repo /etc/yum.repos.d/nginx.repo
 cp /vagrant/src/mongo.repo /etc/yum.repos.d/mongodb.repo
 cp /vagrant/src/mariadb.repo /etc/yum.repos.d/mariadb.repo
 #Disable MariaDB 5 in Repo for MariaDB 10
-#echo 'exclude=mariadb' >> /etc/yum.repos.d/CentOS-Base.repo
+echo 'exclude=mariadb' >> /etc/yum.repos.d/CentOS-Base.repo
 yum -y update
 yum -y clean all
 
@@ -65,21 +65,30 @@ echo "<?php phpinfo(); ?>" > /usr/share/nginx/html/info.php
 #Install MariaDB with TokuDB, PHPMyAdmin
 #https://registry.hub.docker.com/u/zhaowh/centos-mariadb/dockerfile/
 #yum -y install mariadb-server mariadb phpmyadmin --skip-broken
-#MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 #Remove MariaDB 5
-#yum -y remove mariadb-libs
+yum -y remove mariadb-libs
 #Install MariaDB 5
-yum -y install mariadb-server mariadb
+#yum -y install mariadb-server mariadb
+#Install MariaDB 10
+yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared phpmyadmin
+rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+
+#Link PhpMyAdmin with Nginx symbolicly
+ln -s /usr/share/phpMyAdmin /usr/share/nginx/html
+#https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-a-centos-7-server
+
 #No prompt at setting MariaDB pass
 #export DEBIAN_FRONTEND=noninteractive
 #debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password db_password rootpass' 2x
 #debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/vagrant test vagrant'
 #debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/vagrant test vagrant'
-#mysql -uroot -pPASS -e "SET PASSWORD = PASSWORD('test');"
-#Install MariaDB 10 ect.
-#yum -y install --enablerepo=mariadb MariaDB-server MariaDB-client phpmyadmin 
-rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-#cp /usr/share/mysql/mysql.server /etc/init.d/mysql
+#mysql -uroot -pPASS -e "SET PASSWORD FOR 'root' = PASSWORD('test');"
+#Make pass for MariaDB
+mysqladmin -u root password test
+#mysql -u root -p
+#http://jetpackweb.com/blog/2009/07/20/bash-script-to-create-mysql-database-and-user/
+
+#cp /usr/share/mysql/mysql.server /etc/init.d/mysql, /var/lib/mysql/mysql.sock
 #chmod +x /etc/init.d/mysql
 #chkconfig --add mysql
 #chkconfig --level 345 mysql on
@@ -89,6 +98,7 @@ touch /var/log/mariadb/mariadb.log
 #chown -R mysql:mysql /var/lib/mysql
 #Enable TokuDB in MariaDB
 #cp /vagrant/src/tokudb /etc/my.cnf
+#sudo sed -i "s@\[client-server\]@\[client-server\]\nplugin-load=ha_tokudb@" /etc/my.cnf
 #mysql -u root -p
 #MariaDB > SHOW VARIABLES;
 #MariaDB > quit
@@ -134,9 +144,9 @@ systemctl start nginx.service
 systemctl enable php-fpm.service
 systemctl start php-fpm.service
 #Start MariaDB
-#/etc/init.d/mysql start
-systemctl enable mariadb.service
-systemctl start mariadb.service
+#/etc/init.d/mysql start, mysql/mariadb
+systemctl enable mysql.service
+systemctl start mysql.service
 #Start MongoDB
 service mongod start
 chkconfig mongod on
