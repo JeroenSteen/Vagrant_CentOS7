@@ -1,8 +1,11 @@
+#!/bin/bash
+
 #CentOS7 kickstart
 #https://www.centosblog.com/centos-7-minimal-kickstart-file/
+#http://www.tutorialspoint.com/unix/unix-using-arrays.htm
 
-USER = "root"
-PASS = "test"
+USER="root"
+PASS="test"
 
 #Set timezone Europe/Amsterdam
 cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
@@ -50,8 +53,7 @@ touch /var/log/nginx/access.log
 touch /var/log/nginx/error.log
 #Make NGINX pass for PhpMyAdmin
 touch /etc/nginx/pma_pass
-#printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
-printf "root:$(openssl passwd -crypt test)\n" >> /etc/nginx/pma_pass
+printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #Config NGINX; Default host
 cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
 #Config PHP-FPM
@@ -61,6 +63,7 @@ cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
 sudo sed -i "s@;cgi.fix_pathinfo=1@cgi.fix_pathinfo=0@" /etc/php.ini
 sudo sed -i 's@;date.timezone =@date.timezone = "Europe/Amsterdam"@' /etc/php.ini
 #sudo sed -i '@max_connect_errors=100@max_connect_errors=5000@' /etc/php.ini
+#mysqli.allow_local_infile = On
 sudo sed -i "s@listen = 127.0.0.1:9000@listen = /var/run/php-fpm/php-fpm.sock@" /etc/php-fpm.d/www.conf
 sudo sed -i "s@;listen.owner = nobody@listen.owner = nginx@" /etc/php-fpm.d/www.conf
 sudo sed -i "s@;listen.group = nobody@listen.group = nginx@" /etc/php-fpm.d/www.conf
@@ -81,11 +84,11 @@ yum -y remove mariadb-libs
 yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared phpmyadmin
 
 #Link PhpMyAdmin with Nginx symbolicly
-ln -s /usr/share/phpMyAdmin /usr/share/nginx/html
+sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html
 #https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-a-centos-7-server
 
 #No prompt for setting MariaDB pass
-mysqladmin -u root password test
+mysqladmin -u root password $PASS
 #mysql -u root -p
 #http://jetpackweb.com/blog/2009/07/20/bash-script-to-create-mysql-database-and-user/
 #Install fix
@@ -100,6 +103,7 @@ touch /var/log/mariadb/mariadb.log
 #Enable TokuDB in MariaDB
 #cp /vagrant/src/tokudb /etc/my.cnf
 #sudo sed -i "s@\[client-server\]@\[client-server\]\nplugin-load=ha_tokudb@" /etc/my.cnf
+#http://docs.tokutek.com/tokudb/tokudb-index-installation.html
 
 #Install Node.JS/NPM packages
 yum -y --enablerepo=epel install nodejs npm
@@ -117,7 +121,12 @@ yum -y install mongodb-org-2.6.3
 #Get Semange package provider. Config SELinux for MongoDB
 yum -y install policycoreutils-python
 semanage port -a -t mongodb_port_t -p tcp 27017
+#Make fix version
 #"exclude=mongodb-org" > /etc/yum.conf
+#Purging config
+#db.chat.update({},{$set: {created_at: new Date()}}, false, true)
+#db.chat.ensureIndex( { "created_at": 1 }, { expireAfterSeconds: 3600 } )
+#db.runCommand({"collMod" : "chat" , "index" : { "keyPattern" : {"created_at" : 1 } , "expireAfterSeconds" : 31536000 } })
 
 #Install ArangoDB
 yum -y install arangodb-2.2.3
@@ -163,6 +172,10 @@ mkdir /usr/share/nginx/html/th
 mkdir /usr/share/nginx/html/om
 mkdir /usr/share/nginx/html/mo
 mkdir /usr/share/nginx/html/ks
+#https://gist.github.com/oodavid/1809044#file_deploy.php
+#git@platform.org:username/repo.git
+#git config --global user.name "Server"
+#git config --global user.email "server@server.com"
 
 #Show IP
 ifconfig eth0 | grep inet | awk '{ print $2 }'
