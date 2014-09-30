@@ -7,6 +7,6 @@ composer.lock
 .DS_Store
 Thumbs.db
 .idea/
-www/
 raw/
-box/
+vagrant/www/
+vagrant/box/
