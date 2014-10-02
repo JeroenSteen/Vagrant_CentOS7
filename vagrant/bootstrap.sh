@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#C:\Program Files\Oracle\VirtualBox
+#VBoxManage setextradata centos VBoxInternal2/SharedFoldersEnableSymlinksCreate 1
+#vagrant plugin install vagrant-vbguest
+
 #CentOS7 kickstart
 #https://www.centosblog.com/centos-7-minimal-kickstart-file/
 #http://www.tutorialspoint.com/unix/unix-using-arrays.htm
@@ -173,6 +177,7 @@ mkdir /usr/share/nginx/html/om
 mkdir /usr/share/nginx/html/mo
 mkdir /usr/share/nginx/html/ks
 #https://gist.github.com/oodavid/1809044#file_deploy.php
+#http://paulcodr.co/blog/2014/deploy-code/
 #git@platform.org:username/repo.git
 #git config --global user.name "Server"
 #git config --global user.email "server@server.com"
