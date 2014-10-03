@@ -3,6 +3,7 @@
 #C:\Program Files\Oracle\VirtualBox
 #VBoxManage setextradata centos VBoxInternal2/SharedFoldersEnableSymlinksCreate 1
 #vagrant plugin install vagrant-vbguest
+#http://blogs.msdn.com/b/junfeng/archive/2012/05/07/the-symbolic-link-cannot-be-followed-because-its-type-is-disabled.aspx
 
 #CentOS7 kickstart
 #https://www.centosblog.com/centos-7-minimal-kickstart-file/
@@ -60,6 +61,7 @@ touch /etc/nginx/pma_pass
 printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #Config NGINX; Default host
 cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
+cp /vagrant/src/hosts /etc/hosts
 #Config PHP-FPM
 #https://www.digitalocean.com/community/tutorials/how-to-optimize-nginx-configuration
 #sudo sed -i "s@worker_processes 1;@worker_processes 4;" /etc/nginx/nginx.conf
@@ -75,6 +77,7 @@ sudo sed -i "s@user = apache@user = nginx@" /etc/php-fpm.d/www.conf
 sudo sed -i "s@group = apache@group = nginx@" /etc/php-fpm.d/www.conf
 #Test PHP
 echo "<?php phpinfo(); ?>" > /usr/share/nginx/html/info.php
+cp /vagrant/src/db_test.php /usr/share/nginx/html/db_test.php
 
 #Install MariaDB with TokuDB, PHPMyAdmin
 rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -88,8 +91,9 @@ yum -y remove mariadb-libs
 yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared phpmyadmin
 
 #Link PhpMyAdmin with Nginx symbolicly
-sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html
+#sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/phpmyadmin
 #https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-a-centos-7-server
+#https://wiki.archlinux.org/index.php/PhpMyAdmin
 
 #No prompt for setting MariaDB pass
 mysqladmin -u root password $PASS
