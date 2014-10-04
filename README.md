@@ -5,13 +5,18 @@ BOX:
 
 REQUIREMENTS:
 - CentOS 7
-- CURL / WGET / GIT
+- CURL, WGET, GIT
 - COMPOSER
+
 - NGINX
-- PHP 5 / FPM > HHVM
+- PHP 5; FPM > HHVM
 - MYSQL/MARIADB + TOKUDB
-- Node.JS / NPM
-- Socket.IO / Require.IO / MongoJS / Forever/Nodemon
+- PhpMyAdmin, HeidiSQL/ProSQL
+
+- Node.JS/NPM
+- Socket.IO, Require.IO, MongoJS, Forever/Nodemon
+
 - MongoDB
 - ArangoDB
-- Laravel / Artisan Serve
+
+- Laravel/Artisan (PHP >= 5.4, MCrypt)

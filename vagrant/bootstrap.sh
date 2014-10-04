@@ -2,7 +2,7 @@
 
 #C:\Program Files\Oracle\VirtualBox
 #VBoxManage setextradata centos VBoxInternal2/SharedFoldersEnableSymlinksCreate 1
-#vagrant plugin install vagrant-vbguest
+#vagrant plugin un/install vagrant-vbguest
 #http://blogs.msdn.com/b/junfeng/archive/2012/05/07/the-symbolic-link-cannot-be-followed-because-its-type-is-disabled.aspx
 
 #CentOS7 kickstart
@@ -20,9 +20,10 @@ yum -y install deltarpm-3.6-3.el7.x86_64
 #Update YUM package manager
 yum -y upgrade kernel
 yum -y --enablerepo=base clean metadata
-#Install packages
-yum -y install curl curl-devel git kernel-devel nano wget
+#Install packages; kernel-devel
+yum -y install epel-release dkms curl curl-devel git nano wget
 yum -y groupinstall "Development Tools"
+yum -y install kernel-devel
 
 #Install GUI
 #yum -y groupinstall "GNOME Desktop" "Graphical Administration Tools"
@@ -31,7 +32,12 @@ yum -y groupinstall "Development Tools"
 #Use Repositories: Remi, Epel, NGINX, ArangoDB. Maybe IUS, Ajenti
 #Get Remi dependency Epel; CentOS 7 and Red Hat (RHEL) 7
 #http://dl.fedoraproject.org/pub/epel/7/x86_64/e/
-rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+#rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+wget http://download.virtualbox.org/virtualbox/4.3.16/VBoxGuestAdditions_4.3.16.iso;
+mount -o loop VBoxGuestAdditions_4.3.16.iso /media/;
+sudo /media/VBoxLinuxAdditions.run;
+
+
 #Get Remi repo; CentOS 7 and Red Hat (RHEL) 7
 rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
 #Get NGINX
@@ -60,7 +66,7 @@ touch /var/log/nginx/error.log
 touch /etc/nginx/pma_pass
 printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #Config NGINX; Default host
-cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
+cp /vagrant/src/default2.conf /etc/nginx/conf.d/default.conf
 cp /vagrant/src/hosts /etc/hosts
 #Config PHP-FPM
 #https://www.digitalocean.com/community/tutorials/how-to-optimize-nginx-configuration
@@ -91,13 +97,16 @@ yum -y remove mariadb-libs
 yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared phpmyadmin
 
 #Link PhpMyAdmin with Nginx symbolicly
-#sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/phpmyadmin
+sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/phpmyadmin
+#cp /usr/share/phpMyAdmin /usr/share/nginx/html/
 #https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-a-centos-7-server
 #https://wiki.archlinux.org/index.php/PhpMyAdmin
 
 #No prompt for setting MariaDB pass
 mysqladmin -u root password $PASS
 #mysql -u root -p
+#SET PASSWORD FOR 'root'@'localhost' = PASSWORD('new-password');
+#DROP USER ''@'localhost';
 #http://jetpackweb.com/blog/2009/07/20/bash-script-to-create-mysql-database-and-user/
 #Install fix
 #cp /usr/share/mysql/mysql.server /etc/init.d/mysql, /var/lib/mysql/mysql.sock
@@ -111,6 +120,7 @@ touch /var/log/mariadb/mariadb.log
 #Enable TokuDB in MariaDB
 #cp /vagrant/src/tokudb /etc/my.cnf
 #sudo sed -i "s@\[client-server\]@\[client-server\]\nplugin-load=ha_tokudb@" /etc/my.cnf
+sudo sed -i "s@\[client-server\]@\[client-server\]\nbind-address = 0.0.0.0@" /etc/my.cnf
 #http://docs.tokutek.com/tokudb/tokudb-index-installation.html
 
 #Install Node.JS/NPM packages
