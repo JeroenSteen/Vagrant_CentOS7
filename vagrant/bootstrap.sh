@@ -9,6 +9,7 @@
 #https://www.centosblog.com/centos-7-minimal-kickstart-file/
 #http://www.tutorialspoint.com/unix/unix-using-arrays.htm
 
+#Variables for User, Password
 USER="root"
 PASS="test"
 
