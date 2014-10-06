@@ -3,11 +3,6 @@
 #C:\Program Files\Oracle\VirtualBox
 #VBoxManage setextradata centos VBoxInternal2/SharedFoldersEnableSymlinksCreate 1
 #vagrant plugin un/install vagrant-vbguest
-#http://blogs.msdn.com/b/junfeng/archive/2012/05/07/the-symbolic-link-cannot-be-followed-because-its-type-is-disabled.aspx
-
-#CentOS7 kickstart
-#https://www.centosblog.com/centos-7-minimal-kickstart-file/
-#http://www.tutorialspoint.com/unix/unix-using-arrays.htm
 
 #Variables for User, Password
 USER="root"
