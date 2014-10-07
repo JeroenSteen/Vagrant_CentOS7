@@ -69,7 +69,7 @@ touch /etc/nginx/pma_pass
 printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #Config NGINX; Default host
 cp /vagrant/src/default2.conf /etc/nginx/conf.d/default.conf
-cp /vagrant/src/hosts /etc/hosts
+#cp /vagrant/src/hosts /etc/hosts
 
 #Install PHP 5.4 packages
 #php5 php5-fpm php5-mysql php5-mysql php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcached php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php5-xcache
