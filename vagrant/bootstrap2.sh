@@ -47,7 +47,7 @@ sudo touch /var/log/nginx/error.log
 #sudo sed -i "s@worker_processes 1;@worker_processes 4;" /etc/nginx/nginx.conf
 #sudo sed -i "s@worker_connections 1024;@worker_connections 2048;" /etc/nginx/nginx.conf
 #Config Default host
-sudo cp /vagrant/src/default2.conf /etc/nginx/conf.d/default.conf
+sudo cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
 
 #Install PHP 5.4
 sudo yum -y install php-fpm php-common
@@ -67,32 +67,61 @@ sudo sed -i "s@group = apache@group = nginx@" /etc/php-fpm.d/www.conf
 sudo echo "<?php phpinfo(); ?>" > /usr/share/nginx/html/info.php
 sudo cp /vagrant/src/db_test.php /usr/share/nginx/html/db_test.php
 
+#Import MariaDB key
+sudo rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+#Remove MariaDB 5
+sudo yum -y remove mariadb-libs
+#Install MariaDB 10
+sudo yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+#Make log files; MariaDB
+sudo mkdir /var/log/mariadb
+sudo touch /var/log/mariadb/mariadb.log
+#No prompt for setting MariaDB pass
+mysqladmin -u root password $PASS
+#Set Root User Password for all Local domains
+#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@localhost' = PASSWORD('appel');"
+#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@127.0.0.1' = PASSWORD('appel');"
+#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@::1' = PASSWORD('appel');"
+#Drop the Any User
+#sudo mysql --user=$USER --password=$PASS -e "DROP USER ''@'localhost';"
+#http://www.websightdesigns.com/posts/view/how-to-configure-an-ubuntu-web-server-vm-with-vagrant
+#SET @t1=1
+#echo -n password | sha256sum | awk '{print toupper($1)}'
+
+#Install PhpMyAdmin
+yum -y install phpmyadmin
+#Link PhpMyAdmin with Nginx symbolicly
+sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
+#sudo mv /usr/share/phpMyAdmin /usr/share/nginx/html/
 #PhpMyAdmin pass for NGINX
 sudo touch /etc/nginx/pma_pass
 sudo printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 
 #Config Multiple hosts
-sudo cp /vagrant/src/hosts /etc/hosts
+#sudo cp /vagrant/src/hosts /etc/hosts
 #Prepare www folder
-mkdir /usr/share/nginx/html/js
-mkdir /usr/share/nginx/html/th
-mkdir /usr/share/nginx/html/om
-mkdir /usr/share/nginx/html/mo
-mkdir /usr/share/nginx/html/ks
+sudo mkdir /usr/share/nginx/html/js
+sudo mkdir /usr/share/nginx/html/th
+sudo mkdir /usr/share/nginx/html/om
+sudo mkdir /usr/share/nginx/html/mo
+sudo mkdir /usr/share/nginx/html/ks
 
-#Add Iptables; firewall rules
-sudo cp /vagrant/src/iptables /etc/sysconfig/iptables
-
-#Autostart, Start/Stop services
-systemctl restart firewalld.service
-#firewall-cmd --reload
 #Start NGINX
-systemctl enable nginx.service
-systemctl start nginx.service
+sudo systemctl enable nginx.service
+sudo systemctl start nginx.service
 #Start PHP-FPM
-systemctl enable php-fpm.service
-systemctl start php-fpm.service
+sudo systemctl enable php-fpm.service
+sudo systemctl start php-fpm.service
+#Start Firewall daemon
+sudo systemctl enable firewalld.service
+sudo systemctl start firewalld.service
+#Start MariaDB
+sudo systemctl enable mysql.service
+sudo systemctl start mysql.service
 
-#netstat -an | find "8080"
-#netstat -o -n -a | findstr 0.0:8080
-#taskkill /PID 3416
+#Set firewall rules
+sudo firewall-cmd --permanent --zone=public --add-port=80/tcp
+sudo firewall-cmd --permanent --zone=public --add-port=22/tcp
+sudo firewall-cmd --permanent --zone=public --add-service=mysql
+#Reload firewall
+sudo firewall-cmd --reload
