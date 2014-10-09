@@ -1,6 +1,6 @@
 <?php
-//Create connection; Unsafe no pass
-$con=mysqli_connect("localhost","root","","test");
+//Create connection with Root pass
+$con=mysqli_connect("localhost","root","secret","test");
 
 //Check connection; No output is good
 if (mysqli_connect_errno()) {

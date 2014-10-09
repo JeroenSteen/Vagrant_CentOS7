@@ -4,7 +4,7 @@
 USER="root"
 PASS="test"
 #Set timezone Europe/Amsterdam
-cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
+sudo cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 
 #Use DeltaRPM; /usr/bin/applydeltarpm
 sudo yum -y install deltarpm.x86_64
@@ -76,27 +76,17 @@ sudo yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel M
 #Make log files; MariaDB
 sudo mkdir /var/log/mariadb
 sudo touch /var/log/mariadb/mariadb.log
-#No prompt for setting MariaDB pass
-mysqladmin -u root password $PASS
-#Set Root User Password for all Local domains
-#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@localhost' = PASSWORD('appel');"
-#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@127.0.0.1' = PASSWORD('appel');"
-#sudo mysql --user=$USER --password=$PASS -e "SET PASSWORD FOR 'root@::1' = PASSWORD('appel');"
-#Drop the Any User
-#sudo mysql --user=$USER --password=$PASS -e "DROP USER ''@'localhost';"
-#http://www.websightdesigns.com/posts/view/how-to-configure-an-ubuntu-web-server-vm-with-vagrant
-#SET @t1=1
-#echo -n password | sha256sum | awk '{print toupper($1)}'
 
 #Install PhpMyAdmin
-yum -y install phpmyadmin
+sudo yum -y install phpmyadmin
 #Link PhpMyAdmin with Nginx symbolicly
 sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
 #sudo mv /usr/share/phpMyAdmin /usr/share/nginx/html/
 #PhpMyAdmin pass for NGINX
 sudo touch /etc/nginx/pma_pass
 sudo printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
-
+#PhpMyAdmin Multiserver Setup
+sudo cp /vargant/src/config.inc.php /usr/share/phpMyAdmin/config.inc.php
 #Config Multiple hosts
 #sudo cp /vagrant/src/hosts /etc/hosts
 #Prepare www folder
@@ -125,3 +115,9 @@ sudo firewall-cmd --permanent --zone=public --add-port=22/tcp
 sudo firewall-cmd --permanent --zone=public --add-service=mysql
 #Reload firewall
 sudo firewall-cmd --reload
+
+#No prompt for setting MariaDB pass
+sudo mysqladmin -u root password $PASS
+#Do User setup
+sudo mysql --user=$USER --password=$PASS < /vagrant/src/users.sql
+sudo rm -f /vagrant/src/users.sql

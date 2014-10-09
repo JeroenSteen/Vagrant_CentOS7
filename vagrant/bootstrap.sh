@@ -159,6 +159,7 @@ semanage port -a -t mongodb_port_t -p tcp 27017
 
 #Install ArangoDB
 yum -y install arangodb-2.2.3
+#https://github.com/triAGENS/ArangoDB/blob/master/Documentation/man/man8/arangod.8
 #https://www.arangodb.org/manuals/2/install-manual.pdf
 #cd ArangoDB && make setup
 
