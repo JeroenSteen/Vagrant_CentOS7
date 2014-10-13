@@ -3,6 +3,8 @@
 #Variables for User, Password
 USER="root"
 PASS="test"
+#Development (dev), Production (prod)
+ENV="dev"
 #Set timezone Europe/Amsterdam
 sudo cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 
@@ -76,6 +78,10 @@ sudo yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel M
 #Make log files; MariaDB
 sudo mkdir /var/log/mariadb
 sudo touch /var/log/mariadb/mariadb.log
+#Enable TokuDB in MariaDB
+#cp /vagrant/src/tokudb /etc/my.cnf
+#sudo sed -i "s@\[client-server\]@\[client-server\]\nplugin-load=ha_tokudb@" /etc/my.cnf
+#sudo sed -i "s@\[client-server\]@\[client-server\]\nbind-address = 0.0.0.0@" /etc/my.cnf
 
 #Install PhpMyAdmin
 sudo yum -y install phpmyadmin
@@ -86,15 +92,92 @@ sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
 sudo touch /etc/nginx/pma_pass
 sudo printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #PhpMyAdmin Multiserver Setup
-sudo cp /vargant/src/config.inc.php /usr/share/phpMyAdmin/config.inc.php
+sudo cp /vagrant/src/config.inc.php /usr/share/phpMyAdmin/config.inc.php
 #Config Multiple hosts
-#sudo cp /vagrant/src/hosts /etc/hosts
-#Prepare www folder
-sudo mkdir /usr/share/nginx/html/js
-sudo mkdir /usr/share/nginx/html/th
-sudo mkdir /usr/share/nginx/html/om
-sudo mkdir /usr/share/nginx/html/mo
-sudo mkdir /usr/share/nginx/html/ks
+sudo cp /vagrant/src/hosts /etc/hosts
+sudo sed -i "@#server_names_hash_bucket_size: 64;@server_names_hash_bucket_size: 64;@" /etc/nginx/nginx.conf
+#https://www.digitalocean.com/community/tutorials/how-to-configure-vsftpd-to-use-ssl-tls-on-a-centos-vps
+
+#Make Group for SFTP
+sudo groupadd sftpusers
+sudo useradd -g sftpusers vagrant
+#Make Website folder and SFTP Users
+JS_WWW="/usr/share/nginx/html/jeroensteen"
+sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
+sudo chown jeroensteen:sftpusers $JS_WWW
+sudo chown nginx:nginx $JS_WWW
+sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
+
+TH_WWW="/usr/share/nginx/html/theohuson"
+sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
+sudo chown theohuson:sftpusers $TH_WWW
+sudo chown nginx:nginx $TH_WWW
+sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
+
+OM_WWW="/usr/share/nginx/html/omnivoor"
+sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
+sudo chown omnivoor:sftpusers $OM_WWW
+sudo chown nginx:nginx $OM_WWW
+sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
+
+MO_WWW="/usr/share/nginx/html/matcheo"
+sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
+sudo chown matcheo:sftpusers $MO_WWW
+sudo chown nginx:nginx $MO_WWW
+sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
+
+KS_WWW="/usr/share/nginx/html/kunststructuur"
+sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
+sudo chown kunststructuur:sftpusers $KS_WWW
+sudo chown nginx:nginx $KS_WWW
+sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
+
+#Change Shell for User; sudo chsh -s /bin/bash username
+#http://community.spiceworks.com/scripts/show/1799-adding-sftp-users
+
+#Configure SFTP
+#http://www.server-world.info/en/note?os=CentOS_7&p=ssh&f=5
+sudo sed -i "s@/usr/libexec/openssh/sftp-server@internal-sftp@" /etc/ssh/sshd_config
+sudo echo "Match Group sftpusers" > /etc/ssh/sshd_config
+sudo echo "	ChrootDirectory /usr/share/nginx/html/%u" > /etc/ssh/sshd_config
+sudo echo "	ForceCommand internal-sftp" > /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+#Install Composer
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/home
+mkdir /usr/local/bin/composer
+mv /home/composer.phar /usr/local/bin/composer
+
+#Install Node.JS/NPM packages
+yum -y --enablerepo=epel install nodejs npm
+#Get registry for NPM packages
+sudo npm config set registry http://registry.npmjs.org/
+#Install Node packages
+npm install -g forever --save
+npm install -g mongodb --save
+npm install -g mongojs --save
+npm install -g nodemon --save
+npm install -g require --save
+npm install -g express --save
+npm install -g socket.io --save
+
+#Install MongoDB, from Repo file
+yum -y install mongodb-org-2.6.3
+#Get Semange package provider. Config SELinux for MongoDB
+yum -y install policycoreutils-python
+semanage port -a -t mongodb_port_t -p tcp 27017
+#Make fix version
+#"exclude=mongodb-org" > /etc/yum.conf
+#Purging config
+#db.chat.update({},{$set: {created_at: new Date()}}, false, true)
+#db.chat.ensureIndex( { "created_at": 1 }, { expireAfterSeconds: 3600 } )
+#db.runCommand({"collMod" : "chat" , "index" : { "keyPattern" : {"created_at" : 1 } , "expireAfterSeconds" : 31536000 } })
+
+#Install ArangoDB
+yum -y install arangodb-2.2.3
+#https://github.com/triAGENS/ArangoDB/blob/master/Documentation/man/man8/arangod.8
+#https://www.arangodb.org/manuals/2/install-manual.pdf
+#cd ArangoDB && make setup
 
 #Start NGINX
 sudo systemctl enable nginx.service
@@ -120,4 +203,59 @@ sudo firewall-cmd --reload
 sudo mysqladmin -u root password $PASS
 #Do User setup
 sudo mysql --user=$USER --password=$PASS < /vagrant/src/users.sql
-sudo rm -f /vagrant/src/users.sql
+#Remove SQL file
+if [ $ENV == "prod" ]; then sudo rm -f /vagrant/src/users.sql; fi
+
+#Install and Config Cronjobs
+#sudo yum -y install vixie-cron crontabs
+#sudo /sbin/chkconfig crond on
+#sudo /sbin/service crond start
+#crontab -e > @monthly php artisan spotlight:make
+#echo ALL >>/etc/cron.deny
+#echo root >>/etc/cron.allow
+
+#HWADDR="ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'"
+#IPADDR="192.168.1.666"
+#IPROUTER="192.168.1.254"
+
+#Config Eth0
+#sudo echo "DEVICE=eth0
+#BOOTPROTO=static
+#IPADDR=$IPADDR
+#NETMASK=255.255.255.0
+#GATEWAY=$IPROUTER
+#DNS1=$IPROUTER
+#DNS2=$IPROUTER
+#USERCTL=yes
+#HWADDR= $HWADDR
+#ONBOOT=yes" > /etc/sysconfig/network-scripts/ifcfg-eth0
+#http://www.yolinux.com/TUTORIALS/LinuxTutorialNetworking.html
+
+#Add Static, Google IP; DNS/Nameservers
+#sudo echo "" > /etc/resolv.conf
+#Add Gateway to network
+#sudo echo "GATEWAY = $IPROUTER" > /etc/sysconfig/network
+#Restart network
+#/etc/init.d/network restart
+
+#MAKE SSH KEY: https://help.github.com/articles/generating-ssh-keys/
+#ssh-keygen -t rsa -C "jeo_recordz@hotmail.com"
+#Start SSH Agent
+#ssh-agent -s
+#Add SSH key toAgent pid 59566
+#ssh-add ~/.ssh/id_rsa
+ 
+#DEPLOY: http://stackoverflow.com/questions/23391839/clone-private-git-repo-with-dockerfile
+#Make SSH dir
+#mkdir /root/.ssh/
+ 
+#Add private key in SSH dir
+#cp /vagrant/src/id_rsa /root/.ssh/id_rsa
+ 
+#Create known hosts
+#touch /root/.ssh/known_hosts
+#Add bitbuckets key to known hosts
+#ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
+ 
+#Clone the conf files into www folder
+#git clone git@bitbucket.org:User/repo.git
