@@ -26,13 +26,13 @@ sudo yum -y install epel-release
 sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
 
 #Add NGINX Repo
-sudo cp /vagrant/src/nginx.repo /etc/yum.repos.d/nginx.repo
+sudo cp /vagrant/src/repo/nginx.repo /etc/yum.repos.d/nginx.repo
 #Add ArangoDB Repo
-sudo cp /vagrant/src/arangodb.repo /etc/yum.repos.d/arangodb.repo
+sudo cp /vagrant/src/repo/arangodb.repo /etc/yum.repos.d/arangodb.repo
 #Add MongoDB Repo
-sudo cp /vagrant/src/mongodb.repo /etc/yum.repos.d/mongodb.repo
+sudo cp /vagrant/src/repo/mongodb.repo /etc/yum.repos.d/mongodb.repo
 #Add MariaDB 10 Repo
-sudo cp /vagrant/src/mariadb.repo /etc/yum.repos.d/mariadb.repo
+sudo cp /vagrant/src/repo/mariadb.repo /etc/yum.repos.d/mariadb.repo
 #Disable MariaDB 5 in Base Repo, for MariaDB 10
 sudo echo 'exclude=mariadb' >> /etc/yum.repos.d/CentOS-Base.repo
 #Update Repo data
@@ -49,7 +49,7 @@ sudo touch /var/log/nginx/error.log
 #sudo sed -i "s@worker_processes 1;@worker_processes 4;" /etc/nginx/nginx.conf
 #sudo sed -i "s@worker_connections 1024;@worker_connections 2048;" /etc/nginx/nginx.conf
 #Config Default host
-sudo cp /vagrant/src/default.conf /etc/nginx/conf.d/default.conf
+sudo cp /vagrant/src/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 #Install PHP 5.4
 sudo yum -y install php-fpm php-common
@@ -86,62 +86,63 @@ sudo touch /var/log/mariadb/mariadb.log
 #Install PhpMyAdmin
 sudo yum -y install phpmyadmin
 #Link PhpMyAdmin with Nginx symbolicly
-sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
+#sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
 #sudo mv /usr/share/phpMyAdmin /usr/share/nginx/html/
+sudo chown nginx:nginx /usr/share/phpMyAdmin
 #PhpMyAdmin pass for NGINX
 sudo touch /etc/nginx/pma_pass
 sudo printf "root:$(openssl passwd -crypt $PASS)\n" >> /etc/nginx/pma_pass
 #PhpMyAdmin Multiserver Setup
-sudo cp /vagrant/src/config.inc.php /usr/share/phpMyAdmin/config.inc.php
+sudo cp /vagrant/src/pma/config.inc.php /usr/share/phpMyAdmin/config.inc.php
 #Config Multiple hosts
 sudo cp /vagrant/src/hosts /etc/hosts
 sudo sed -i "@#server_names_hash_bucket_size: 64;@server_names_hash_bucket_size: 64;@" /etc/nginx/nginx.conf
 #https://www.digitalocean.com/community/tutorials/how-to-configure-vsftpd-to-use-ssl-tls-on-a-centos-vps
 
 #Make Group for SFTP
-sudo groupadd sftpusers
-sudo useradd -g sftpusers vagrant
+#sudo groupadd sftpusers
+#sudo useradd -g sftpusers vagrant
 #Make Website folder and SFTP Users
-JS_WWW="/usr/share/nginx/html/jeroensteen"
-sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
-sudo chown jeroensteen:sftpusers $JS_WWW
-sudo chown nginx:nginx $JS_WWW
-sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
+#JS_WWW="/usr/share/nginx/html/jeroensteen"
+#sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
+#sudo chown jeroensteen:sftpusers $JS_WWW
+#sudo chown nginx:nginx $JS_WWW
+#sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
 
-TH_WWW="/usr/share/nginx/html/theohuson"
-sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
-sudo chown theohuson:sftpusers $TH_WWW
-sudo chown nginx:nginx $TH_WWW
-sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
+#TH_WWW="/usr/share/nginx/html/theohuson"
+#sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
+#sudo chown theohuson:sftpusers $TH_WWW
+#sudo chown nginx:nginx $TH_WWW
+#sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
 
-OM_WWW="/usr/share/nginx/html/omnivoor"
-sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
-sudo chown omnivoor:sftpusers $OM_WWW
-sudo chown nginx:nginx $OM_WWW
-sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
+#OM_WWW="/usr/share/nginx/html/omnivoor"
+#sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
+#sudo chown omnivoor:sftpusers $OM_WWW
+#sudo chown nginx:nginx $OM_WWW
+#sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
 
-MO_WWW="/usr/share/nginx/html/matcheo"
-sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
-sudo chown matcheo:sftpusers $MO_WWW
-sudo chown nginx:nginx $MO_WWW
-sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
+#MO_WWW="/usr/share/nginx/html/matcheo"
+#sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
+#sudo chown matcheo:sftpusers $MO_WWW
+#sudo chown nginx:nginx $MO_WWW
+#sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
 
-KS_WWW="/usr/share/nginx/html/kunststructuur"
-sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
-sudo chown kunststructuur:sftpusers $KS_WWW
-sudo chown nginx:nginx $KS_WWW
-sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
+#KS_WWW="/usr/share/nginx/html/kunststructuur"
+#sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
+#sudo chown kunststructuur:sftpusers $KS_WWW
+#sudo chown nginx:nginx $KS_WWW
+#sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
 
 #Change Shell for User; sudo chsh -s /bin/bash username
 #http://community.spiceworks.com/scripts/show/1799-adding-sftp-users
 
 #Configure SFTP
 #http://www.server-world.info/en/note?os=CentOS_7&p=ssh&f=5
-sudo sed -i "s@/usr/libexec/openssh/sftp-server@internal-sftp@" /etc/ssh/sshd_config
-sudo echo "Match Group sftpusers" > /etc/ssh/sshd_config
-sudo echo "	ChrootDirectory /usr/share/nginx/html/%u" > /etc/ssh/sshd_config
-sudo echo "	ForceCommand internal-sftp" > /etc/ssh/sshd_config
-sudo systemctl restart sshd
+#sudo sed -i "s@/usr/libexec/openssh/sftp-server@internal-sftp@" /etc/ssh/sshd_config
+#sudo echo "Match Group sftpusers" > /etc/ssh/sshd_config
+#sudo echo "	ChrootDirectory /usr/share/nginx/html/%u" > /etc/ssh/sshd_config
+#sudo echo "	ForceCommand internal-sftp" > /etc/ssh/sshd_config
+#sudo systemctl restart sshd
 
 #Install Composer
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/home
@@ -237,6 +238,15 @@ if [ $ENV == "prod" ]; then sudo rm -f /vagrant/src/users.sql; fi
 #sudo echo "GATEWAY = $IPROUTER" > /etc/sysconfig/network
 #Restart network
 #/etc/init.d/network restart
+
+#Add whoami check; PHP file for Git Hook
+cp /vagrant/src/whoami.php /usr/share/nginx/html/
+#Make SSH dir for NGINX
+sudo mkdir -p /var/cache/nginx/.ssh/; sudo chmod 0700 /var/cache/nginx/.ssh/
+#Make SSH key for NGINX Hook
+#sudo -u nginx ssh-keygen -t rsa
+sudo -u nginx ssh-keygen -f /var/cache/nginx/.ssh/git.rsa -t rsa -N 'kisses'
+cp /vagrant/src/ssh.conf /var/cache/nginx/.ssh/
 
 #MAKE SSH KEY: https://help.github.com/articles/generating-ssh-keys/
 #ssh-keygen -t rsa -C "jeo_recordz@hotmail.com"
