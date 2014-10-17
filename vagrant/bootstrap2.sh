@@ -35,6 +35,8 @@ sudo cp /vagrant/src/repo/mongodb.repo /etc/yum.repos.d/mongodb.repo
 sudo cp /vagrant/src/repo/mariadb.repo /etc/yum.repos.d/mariadb.repo
 #Disable MariaDB 5 in Base Repo, for MariaDB 10
 sudo echo 'exclude=mariadb' >> /etc/yum.repos.d/CentOS-Base.repo
+#Remove MariaDB 5
+#sudo yum -y remove mariadb-libs
 #Update Repo data
 sudo yum -y clean metadata
 sudo yum -y update
@@ -72,7 +74,8 @@ sudo cp /vagrant/src/db_test.php /usr/share/nginx/html/db_test.php
 #Import MariaDB key
 sudo rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 #Remove MariaDB 5
-sudo yum -y remove mariadb-libs
+#sudo yum -y remove mariadb-libs
+rpm -e --nodeps mariadb-libs
 #Install MariaDB 10
 sudo yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 #Make log files; MariaDB
@@ -86,7 +89,7 @@ sudo touch /var/log/mariadb/mariadb.log
 #Install PhpMyAdmin
 sudo yum -y install phpmyadmin
 #Link PhpMyAdmin with Nginx symbolicly
-#sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
+sudo ln -s /usr/share/phpMyAdmin /usr/share/nginx/html/
 #sudo mv /usr/share/phpMyAdmin /usr/share/nginx/html/
 sudo chown nginx:nginx /usr/share/phpMyAdmin
 #PhpMyAdmin pass for NGINX
@@ -100,49 +103,49 @@ sudo sed -i "@#server_names_hash_bucket_size: 64;@server_names_hash_bucket_size:
 #https://www.digitalocean.com/community/tutorials/how-to-configure-vsftpd-to-use-ssl-tls-on-a-centos-vps
 
 #Make Group for SFTP
-#sudo groupadd sftpusers
+sudo groupadd sftpusers
 #sudo useradd -g sftpusers vagrant
 #Make Website folder and SFTP Users
-#JS_WWW="/usr/share/nginx/html/jeroensteen"
-#sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
-#sudo chown jeroensteen:sftpusers $JS_WWW
-#sudo chown nginx:nginx $JS_WWW
-#sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
+JS_WWW="/usr/share/nginx/html/jeroensteen"
+sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
+sudo chown jeroensteen:sftpusers $JS_WWW
+sudo chown nginx:nginx $JS_WWW
+sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
 
-#TH_WWW="/usr/share/nginx/html/theohuson"
-#sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
-#sudo chown theohuson:sftpusers $TH_WWW
-#sudo chown nginx:nginx $TH_WWW
-#sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
+TH_WWW="/usr/share/nginx/html/theohuson"
+sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
+sudo chown theohuson:sftpusers $TH_WWW
+sudo chown nginx:nginx $TH_WWW
+sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
 
-#OM_WWW="/usr/share/nginx/html/omnivoor"
-#sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
-#sudo chown omnivoor:sftpusers $OM_WWW
-#sudo chown nginx:nginx $OM_WWW
-#sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
+OM_WWW="/usr/share/nginx/html/omnivoor"
+sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
+sudo chown omnivoor:sftpusers $OM_WWW
+sudo chown nginx:nginx $OM_WWW
+sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
 
-#MO_WWW="/usr/share/nginx/html/matcheo"
-#sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
-#sudo chown matcheo:sftpusers $MO_WWW
-#sudo chown nginx:nginx $MO_WWW
-#sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
+MO_WWW="/usr/share/nginx/html/matcheo"
+sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
+sudo chown matcheo:sftpusers $MO_WWW
+sudo chown nginx:nginx $MO_WWW
+sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
 
-#KS_WWW="/usr/share/nginx/html/kunststructuur"
-#sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
-#sudo chown kunststructuur:sftpusers $KS_WWW
-#sudo chown nginx:nginx $KS_WWW
-#sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
+KS_WWW="/usr/share/nginx/html/kunststructuur"
+sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
+sudo chown kunststructuur:sftpusers $KS_WWW
+sudo chown nginx:nginx $KS_WWW
+sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
 
 #Change Shell for User; sudo chsh -s /bin/bash username
 #http://community.spiceworks.com/scripts/show/1799-adding-sftp-users
 
 #Configure SFTP
 #http://www.server-world.info/en/note?os=CentOS_7&p=ssh&f=5
-#sudo sed -i "s@/usr/libexec/openssh/sftp-server@internal-sftp@" /etc/ssh/sshd_config
-#sudo echo "Match Group sftpusers" > /etc/ssh/sshd_config
-#sudo echo "	ChrootDirectory /usr/share/nginx/html/%u" > /etc/ssh/sshd_config
-#sudo echo "	ForceCommand internal-sftp" > /etc/ssh/sshd_config
-#sudo systemctl restart sshd
+sudo sed -i "s@/usr/libexec/openssh/sftp-server@internal-sftp@" /etc/ssh/sshd_config
+sudo echo "Match Group sftpusers" >> /etc/ssh/sshd_config
+sudo echo "	ChrootDirectory /usr/share/nginx/html/%u" >> /etc/ssh/sshd_config
+sudo echo "	ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+sudo systemctl restart sshd
 
 #Install Composer
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/home
