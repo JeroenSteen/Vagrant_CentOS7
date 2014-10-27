@@ -107,33 +107,33 @@ sudo groupadd sftpusers
 #sudo useradd -g sftpusers vagrant
 #Make Website folder and SFTP Users
 JS_WWW="/usr/share/nginx/html/jeroensteen"
-sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p jeroensteen jeroensteen
-sudo chown jeroensteen:sftpusers $JS_WWW
-sudo chown nginx:nginx $JS_WWW
+sudo useradd -g sftpusers -d $JS_WWW -s /sbin/nologin -p 'mkpasswd jeroensteen' jeroensteen
+sudo chown jeroensteen:nginx $JS_WWW
+#sudo chown nginx:nginx $JS_WWW
 sudo cp /vagrant/src/www/index_js.html $JS_WWW/index.html
 
 TH_WWW="/usr/share/nginx/html/theohuson"
 sudo useradd -g sftpusers -d $TH_WWW -s /sbin/nologin -p theohuson theohuson
-sudo chown theohuson:sftpusers $TH_WWW
-sudo chown nginx:nginx $TH_WWW
+sudo chown theohuson:nginx $TH_WWW
+#sudo chown nginx:nginx $TH_WWW
 sudo cp /vagrant/src/www/index_th.html $TH_WWW/index.html
 
 OM_WWW="/usr/share/nginx/html/omnivoor"
 sudo useradd -g sftpusers -d $OM_WWW -s /sbin/nologin -p omnivoor omnivoor
-sudo chown omnivoor:sftpusers $OM_WWW
-sudo chown nginx:nginx $OM_WWW
+sudo chown omnivoor:nginx $OM_WWW
+#sudo chown nginx:nginx $OM_WWW
 sudo cp /vagrant/src/www/index_om.html $OM_WWW/index.html
 
 MO_WWW="/usr/share/nginx/html/matcheo"
 sudo useradd -g sftpusers -d $MO_WWW -s /sbin/nologin -p matcheo matcheo
-sudo chown matcheo:sftpusers $MO_WWW
-sudo chown nginx:nginx $MO_WWW
+sudo chown matcheo:nginx $MO_WWW
+#sudo chown nginx:nginx $MO_WWW
 sudo cp /vagrant/src/www/index_mo.html $MO_WWW/index.html
 
 KS_WWW="/usr/share/nginx/html/kunststructuur"
 sudo useradd -g sftpusers -d $KS_WWW -s /sbin/nologin -p kunststructuur kunststructuur
-sudo chown kunststructuur:sftpusers $KS_WWW
-sudo chown nginx:nginx $KS_WWW
+sudo chown kunststructuur:nginx $KS_WWW
+#sudo chown nginx:nginx $KS_WWW
 sudo cp /vagrant/src/www/index_ks.html $KS_WWW/index.html
 
 #Change Shell for User; sudo chsh -s /bin/bash username
